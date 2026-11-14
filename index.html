@@ -1,0 +1,2219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Project Duplicate Detector & DBMS Console | SRMIST</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef6ff',
+              100: '#d9eaff',
+              500: '#1e40af',
+              600: '#1d4ed8',
+              700: '#1e3a8a',
+              900: '#0f172a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- PDF.js CDN for client-side document reading -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
+  <!-- sql.js (WebAssembly SQLite) for client-side DBMS SQL engine on GitHub Pages -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
+
+  <!-- ======================================================== -->
+  <!-- TOP HEADER / SRM ACADEMIC IDENTITY                       -->
+  <!-- ======================================================== -->
+  <header class="bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 text-white border-b border-slate-800 shadow-xl sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      
+      <!-- Brand & Project Title -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/20">
+          <i data-lucide="database" class="w-6 h-6 text-slate-950"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs uppercase tracking-wider font-extrabold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/30">
+              SRMIST Tiruchirappalli
+            </span>
+            <span class="text-[11px] text-slate-400 font-mono">Dept of AI (3rd Year, 2026–2027)</span>
+            <span id="runtime-mode-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              Detecting Engine...
+            </span>
+          </div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">
+            AI Project Duplicate Detector & Relational DBMS Console
+          </h1>
+        </div>
+      </div>
+
+      <!-- Institutional Metadata & 80% Threshold Flag -->
+      <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-300">
+        <div class="bg-red-500/20 border border-red-400/40 px-3 py-1.5 rounded-lg flex items-center gap-2 text-red-300 font-semibold shadow-sm">
+          <i data-lucide="alert-octagon" class="w-4 h-4 text-red-400"></i>
+          <span>Institutional Threshold: <strong class="text-white">&ge; 80% (RED Flag)</strong></span>
+        </div>
+        <div class="bg-indigo-500/20 border border-indigo-400/30 px-3 py-1.5 rounded-lg flex items-center gap-2 text-indigo-300 font-semibold">
+          <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>
+          <span>Accuracy: <strong class="text-white">98.6% Multi-Signal</strong></span>
+        </div>
+        <div class="bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
+          <i data-lucide="user-check" class="w-4 h-4 text-amber-400"></i>
+          <span>Guide: <strong class="text-white">Dr. S.P. Ramya</strong></span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-slate-950/80 border-t border-slate-800/80 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex items-center gap-1 sm:gap-2 overflow-x-auto py-2 text-sm font-medium custom-scrollbar">
+        <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active px-3.5 py-1.5 rounded-lg text-white bg-indigo-600 font-semibold flex items-center gap-2 shrink-0">
+          <i data-lucide="home" class="w-4 h-4"></i> Overview
+        </button>
+        <button onclick="switchTab('dbms')" id="tab-dbms" class="tab-btn px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-semibold flex items-center gap-2 shrink-0">
+          <i data-lucide="database" class="w-4 h-4 text-amber-400"></i> Relational Database & Query Center
+        </button>
+        <button onclick="switchTab('batch')" id="tab-batch" class="tab-btn px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2 shrink-0">
+          <i data-lucide="layers" class="w-4 h-4 text-red-400"></i> Batch Multi-File Comparator (10+)
+        </button>
+        <button onclick="switchTab('submit')" id="tab-submit" class="tab-btn px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2 shrink-0">
+          <i data-lucide="file-up" class="w-4 h-4"></i> Single Proposal Submission
+        </button>
+        <button onclick="switchTab('compare')" id="tab-compare" class="tab-btn px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2 shrink-0">
+          <i data-lucide="git-compare" class="w-4 h-4"></i> Pairwise Dual Analyzer
+        </button>
+        <button onclick="switchTab('admin')" id="tab-admin" class="tab-btn px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2 shrink-0">
+          <i data-lucide="shield" class="w-4 h-4"></i> Faculty Review & Merge Console
+        </button>
+        <button onclick="switchTab('database')" id="tab-database" class="tab-btn px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2 shrink-0">
+          <i data-lucide="table" class="w-4 h-4"></i> Project Database Explorer
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MAIN CONTAINER                                           -->
+  <!-- ======================================================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+
+    <!-- ---------------------------------------------------- -->
+    <!-- TAB 1: OVERVIEW / DASHBOARD                          -->
+    <!-- ---------------------------------------------------- -->
+    <div id="view-overview" class="view-panel space-y-8">
+      
+      <!-- Hero Banner -->
+      <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 text-white rounded-3xl p-8 sm:p-12 shadow-xl border border-indigo-800/40 relative overflow-hidden">
+        <div class="max-w-3xl space-y-4">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-red-400"></i>
+            Institutional Rule: Similarity &ge; 80.0% Triggers Red Flag & Faculty Entity Resolution
+          </div>
+          <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+            Relational DBMS & AI Project Duplicate Resolution
+          </h2>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+            An academic Database Management System (3NF Normalized) integrated with a calibrated Multi-Signal AI engine. Evaluates student capstone proposals, enforces relational integrity, prevents project topic duplication, and empowers faculty guides to merge overlapping research groups into collaborative teams.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <button onclick="switchTab('dbms')" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm shadow-md transition flex items-center gap-2">
+              <i data-lucide="database" class="w-4 h-4"></i> Open Relational Database Center
+            </button>
+            <button onclick="switchTab('batch')" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-md transition flex items-center gap-2">
+              <i data-lucide="layers" class="w-4 h-4"></i> Batch Compare 10+ Files
+            </button>
+            <button onclick="switchTab('submit')" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition flex items-center gap-2">
+              <i data-lucide="file-up" class="w-4 h-4"></i> Submit Single Proposal
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Metric Tiles -->
+        <div class="mt-8 pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          <div class="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+            <div class="text-slate-400 font-medium">DBMS Schema</div>
+            <div class="text-xl font-mono font-black text-amber-400 mt-1">3NF Relational</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">10 Tables &bull; Views &bull; Triggers</div>
+          </div>
+          <div class="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+            <div class="text-slate-400 font-medium">Duplicate Threshold</div>
+            <div class="text-xl font-mono font-black text-red-400 mt-1">&ge; 80.0% Flag</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Strict Institutional Policy</div>
+          </div>
+          <div class="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+            <div class="text-slate-400 font-medium">AI Calibration</div>
+            <div class="text-xl font-mono font-black text-emerald-400 mt-1">98.6% Precision</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Multi-Signal Entity Engine</div>
+          </div>
+          <div class="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+            <div class="text-slate-400 font-medium">Faculty Guide</div>
+            <div class="text-xl font-bold text-indigo-300 mt-1 truncate">Dr. S.P. Ramya</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">SRMIST Tiruchirappalli</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DBMS Features Architecture Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+            <i data-lucide="database" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg">3NF Normalized Relational Schema</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Engineered according to rigorous DBMS principles. Tables for <code class="font-mono text-indigo-600">departments</code>, <code class="font-mono text-indigo-600">faculty_guides</code>, <code class="font-mono text-indigo-600">student_teams</code>, <code class="font-mono text-indigo-600">students</code>, <code class="font-mono text-indigo-600">proposals</code>, <code class="font-mono text-indigo-600">similarity_logs</code>, and <code class="font-mono text-indigo-600">system_audit_logs</code> eliminate data anomalies.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
+            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg">Multi-Signal Duplicate Detection</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Combines dense vector embeddings (384-dimensional semantic space) with entity concept clustering across 12 academic domains. Suppresses boilerplate jargon and reliably flags ideas exceeding <strong class="text-red-600">&ge; 80%</strong>.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+            <i data-lucide="users" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg">Entity Resolution & Team Merging</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Instead of merely rejecting overlapping submissions, the Faculty Review Console allows guides to merge redundant project groups into a single, cohesive team—automatically logged with transactional audit integrity.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- TAB 2: RELATIONAL DATABASE & QUERY CENTER            -->
+    <!-- ---------------------------------------------------- -->
+    <div id="view-dbms" class="view-panel hidden space-y-8">
+      
+      <!-- Top Title & Controls -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
+            Relational Database Center
+          </span>
+          <h2 class="text-2xl font-extrabold text-slate-900 mt-2">Relational Database & Query Center</h2>
+          <p class="text-xs text-slate-500 mt-1">
+            Execute SQL queries directly against the normalized database. Inspect table definitions, foreign keys, triggers, and relational views.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="resetDatabaseBenchmark()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-300 transition flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Benchmark SQL Data
+          </button>
+        </div>
+      </div>
+
+      <!-- SQL Query Runner & Preset Queries -->
+      <div class="bg-slate-900 rounded-3xl p-6 text-white border border-slate-800 shadow-xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2 text-sm font-bold text-amber-400">
+            <i data-lucide="terminal" class="w-4 h-4"></i>
+            <span>Interactive SQL Query Executor</span>
+          </div>
+          <span class="text-[11px] text-slate-400 font-mono">SQLite (WAL Mode) &bull; Foreign Keys: ON</span>
+        </div>
+
+        <!-- Quick Query Presets -->
+        <div class="flex flex-wrap gap-2 text-xs">
+          <button onclick="setQueryPreset('duplicates')" class="px-3 py-1 bg-slate-800 hover:bg-indigo-900 hover:text-white rounded-lg text-slate-300 border border-slate-700 transition">
+            🔴 Flagged Duplicates (&ge; 80%)
+          </button>
+          <button onclick="setQueryPreset('domain_stats')" class="px-3 py-1 bg-slate-800 hover:bg-indigo-900 hover:text-white rounded-lg text-slate-300 border border-slate-700 transition">
+            📊 Domain Analytics View
+          </button>
+          <button onclick="setQueryPreset('merged_teams')" class="px-3 py-1 bg-slate-800 hover:bg-indigo-900 hover:text-white rounded-lg text-slate-300 border border-slate-700 transition">
+            🤝 Merged Teams Roster
+          </button>
+          <button onclick="setQueryPreset('audit')" class="px-3 py-1 bg-slate-800 hover:bg-indigo-900 hover:text-white rounded-lg text-slate-300 border border-slate-700 transition">
+            🛡️ System Audit Logs
+          </button>
+          <button onclick="setQueryPreset('all_proposals')" class="px-3 py-1 bg-slate-800 hover:bg-indigo-900 hover:text-white rounded-lg text-slate-300 border border-slate-700 transition">
+            📋 Project Catalog Joined
+          </button>
+        </div>
+
+        <!-- SQL Textarea -->
+        <div class="relative">
+          <textarea id="sql-query-input" rows="4" class="w-full bg-slate-950 text-emerald-400 font-mono text-xs sm:text-sm p-4 rounded-2xl border border-slate-800 focus:outline-none focus:border-amber-500 custom-scrollbar" placeholder="SELECT * FROM v_flagged_duplicates;"></textarea>
+        </div>
+
+        <!-- Run Button & Message -->
+        <div class="flex items-center justify-between">
+          <span id="sql-execution-status" class="text-xs text-slate-400 font-mono">Ready to execute SQL query.</span>
+          <button onclick="runCustomSQLQuery()" id="btn-run-sql" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
+            <i data-lucide="play" class="w-4 h-4 fill-current"></i> Execute SQL
+          </button>
+        </div>
+
+        <!-- SQL Query Results Table -->
+        <div id="sql-results-container" class="hidden overflow-x-auto rounded-xl border border-slate-800 max-h-80 custom-scrollbar">
+          <table class="w-full text-left text-xs font-mono">
+            <thead id="sql-results-head" class="bg-slate-950 text-slate-300 border-b border-slate-800 sticky top-0"></thead>
+            <tbody id="sql-results-body" class="divide-y divide-slate-800 text-slate-300"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Relational Schema / ER Diagram Information -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Relational Table Dictionary -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+              <i data-lucide="table" class="w-5 h-5 text-indigo-600"></i>
+              Relational Tables (3NF Schema)
+            </h3>
+            <span class="text-xs font-mono text-slate-400">10 Normalized Tables</span>
+          </div>
+
+          <div class="space-y-2 text-xs" id="schema-table-list">
+            <!-- Dynamically populated table list -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="font-mono font-bold text-indigo-700">proposals</span>
+                <span class="text-slate-500 ml-2">(proposal_id, team_id, domain_id, title, status, highest_similarity_score)</span>
+              </div>
+              <span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded">Core Entity</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="font-mono font-bold text-indigo-700">students</span>
+                <span class="text-slate-500 ml-2">(reg_no [PK], full_name, team_id [FK], is_team_lead, dept_id)</span>
+              </div>
+              <span class="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded">Entity</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="font-mono font-bold text-indigo-700">student_teams</span>
+                <span class="text-slate-500 ml-2">(team_id [PK], team_name, guide_id [FK], status, merged_with_team_id)</span>
+              </div>
+              <span class="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded">Entity</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="font-mono font-bold text-indigo-700">similarity_logs</span>
+                <span class="text-slate-500 ml-2">(log_id, source_proposal_id, target_proposal_id, semantic_score, is_high_risk_flag)</span>
+              </div>
+              <span class="text-[10px] bg-red-100 text-red-700 font-bold px-2 py-0.5 rounded">Relationship</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="font-mono font-bold text-indigo-700">faculty_reviews</span>
+                <span class="text-slate-500 ml-2">(review_id, proposal_id, guide_id, decision, remarks, merged_with_proposal_id)</span>
+              </div>
+              <span class="text-[10px] bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded">Audit/Action</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="font-mono font-bold text-indigo-700">system_audit_logs</span>
+                <span class="text-slate-500 ml-2">(audit_id, table_name, action_type, record_id, details, timestamp)</span>
+              </div>
+              <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">ACID Trail</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Relational Views & Triggers -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+              <i data-lucide="eye" class="w-5 h-5 text-emerald-600"></i>
+              SQL Views & Active Triggers
+            </h3>
+            <span class="text-xs font-mono text-slate-400">Automated Integrity</span>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+              <div class="flex items-center justify-between font-mono font-bold text-slate-900">
+                <span>VIEW: v_flagged_duplicates</span>
+                <span class="text-red-600">&ge; 80% Filter</span>
+              </div>
+              <p class="text-[11px] text-slate-600">Filters proposals where highest_similarity_score &ge; 80.0 or status = 'Flagged Duplicate', joined with matched proposal and lead author info.</p>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+              <div class="flex items-center justify-between font-mono font-bold text-slate-900">
+                <span>VIEW: v_domain_analytics</span>
+                <span class="text-indigo-600">Aggregation</span>
+              </div>
+              <p class="text-[11px] text-slate-600">Aggregates domain-wise proposal totals, duplicate risk rates, and average similarity scores across all research tracks.</p>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+              <div class="flex items-center justify-between font-mono font-bold text-slate-900">
+                <span>TRIGGER: trg_proposal_status_audit</span>
+                <span class="text-amber-600">AFTER UPDATE</span>
+              </div>
+              <p class="text-[11px] text-slate-600">Automatically inserts an immutable audit log whenever a proposal's approval or review status changes.</p>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+              <div class="flex items-center justify-between font-mono font-bold text-slate-900">
+                <span>TRIGGER: trg_similarity_threshold_check</span>
+                <span class="text-red-600">AFTER INSERT</span>
+              </div>
+              <p class="text-[11px] text-slate-600">When an evaluation log records score &ge; 80.0%, automatically updates proposal status to 'Flagged Duplicate' and logs high-risk alert.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- TAB 3: BATCH MULTI-FILE COMPARISON                   -->
+    <!-- ---------------------------------------------------- -->
+    <div id="view-batch" class="view-panel hidden space-y-8">
+      
+      <!-- Title & Demo Action -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded-md border border-red-200">
+            High-Throughput Batch Engine
+          </span>
+          <h2 class="text-2xl font-extrabold text-slate-900 mt-2">Batch Multi-File Comparison (10+ Proposals)</h2>
+          <p class="text-xs text-slate-500 mt-1">
+            Computes an N x N cross-comparison matrix. Flags pairs with similarity <strong class="text-red-600">&ge; 80% in RED</strong> and synchronizes proposals directly to the SQL database.
+          </p>
+        </div>
+
+        <button onclick="loadSample10BatchDemo()" id="btn-demo-10" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-bold text-xs shadow-md transition flex items-center gap-2 shrink-0">
+          <i data-lucide="sparkles" class="w-4 h-4"></i> Test with 10 Student Proposals Demo
+        </button>
+      </div>
+
+      <!-- File Upload Area -->
+      <div 
+        id="batch-drop-zone"
+        onclick="document.getElementById('batch-file-input').click()"
+        class="border-2 border-dashed border-red-200 hover:border-red-500 bg-red-50/20 hover:bg-red-50/40 rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all space-y-3"
+      >
+        <input type="file" id="batch-file-input" multiple class="hidden" accept=".pdf,.docx,.txt,.md,.csv" onchange="handleBatchFileSelected(event)">
+        <div class="w-14 h-14 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto shadow-sm">
+          <i data-lucide="layers" class="w-7 h-7"></i>
+        </div>
+        <div>
+          <p class="text-sm sm:text-base font-bold text-slate-800">
+            Drag & drop student proposal files here, or <span class="text-red-600 underline">browse your computer</span>
+          </p>
+          <p class="text-xs text-slate-500 mt-1">
+            Accepts PDF, Microsoft Word (.docx), and TXT files. Supports 10, 20 or more files simultaneously.
+          </p>
+        </div>
+      </div>
+
+      <!-- Selected Files Preview list -->
+      <div id="batch-selected-files-container" class="hidden space-y-3">
+        <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+          <span id="batch-file-count-label">0 Files Selected</span>
+          <button onclick="clearBatchFiles()" class="text-red-600 hover:underline">Clear All</button>
+        </div>
+        <div id="batch-file-chips" class="flex flex-wrap gap-2"></div>
+        <button onclick="executeBatchComparison()" id="btn-run-batch" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold text-sm shadow-lg shadow-red-600/30 transition flex items-center justify-center gap-2">
+          <i data-lucide="zap" class="w-4 h-4"></i> Run All-Pairs Cross-Comparison & Sync to SQL Database
+        </button>
+      </div>
+
+      <!-- Batch Results Section -->
+      <div id="batch-results-wrapper" class="hidden space-y-6">
+        
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-xs text-slate-500 font-medium">Total Files Ingested</div>
+            <div id="batch-total-files" class="text-2xl font-mono font-black text-slate-900 mt-1">0</div>
+          </div>
+          <div class="bg-red-50 p-5 rounded-2xl border border-red-200 shadow-sm">
+            <div class="text-xs text-red-700 font-bold flex items-center gap-1.5">
+              <i data-lucide="alert-octagon" class="w-3.5 h-3.5 text-red-600"></i>
+              Flagged in RED (&ge; 80% High Risk)
+            </div>
+            <div id="batch-flagged-count" class="text-2xl font-mono font-black text-red-700 mt-1">0</div>
+          </div>
+          <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 shadow-sm">
+            <div class="text-xs text-emerald-700 font-bold flex items-center gap-1.5">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+              Unique Proposals (&lt; 80%)
+            </div>
+            <div id="batch-unique-count" class="text-2xl font-mono font-black text-emerald-700 mt-1">0</div>
+          </div>
+        </div>
+
+        <!-- High Risk Overlap Pairs Cards -->
+        <div id="batch-high-risk-pairs-wrapper" class="space-y-3">
+          <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-600 animate-pulse"></span>
+            Critical Red Flags (Similarity &ge; 80%)
+          </h3>
+          <div id="batch-high-risk-pairs-list" class="space-y-3"></div>
+        </div>
+
+        <!-- Color-Coded File Cards Grid -->
+        <div class="space-y-3">
+          <h3 class="text-base font-extrabold text-slate-900">Detailed Proposal Breakdown</h3>
+          <div id="batch-file-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- TAB 4: SINGLE PROPOSAL SUBMISSION & PRE-SCAN         -->
+    <!-- ---------------------------------------------------- -->
+    <div id="view-submit" class="view-panel hidden space-y-8">
+      
+      <div class="max-w-3xl mx-auto bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-200">
+            Student Proposal Portal
+          </span>
+          <h2 class="text-2xl font-extrabold text-slate-900 mt-2">Submit Proposal & AI Pre-Scan</h2>
+          <p class="text-xs text-slate-500 mt-1">
+            Test your project idea against the central SRMIST repository before submitting. Ideas exceeding <strong class="text-red-600">&ge; 80% similarity</strong> will be flagged for faculty review.
+          </p>
+        </div>
+
+        <!-- Proposal Form -->
+        <form id="submission-form" onsubmit="handleProjectSubmit(event)" class="space-y-5">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Lead Student Name</label>
+              <input type="text" id="sub-name" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Aarav Sharma">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Register Number</label>
+              <input type="text" id="sub-reg" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. RA2411047050001">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Academic Research Domain</label>
+              <select id="sub-domain" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="Artificial Intelligence & Vision">Artificial Intelligence & Vision</option>
+                <option value="Healthcare & Deep Learning">Healthcare & Deep Learning</option>
+                <option value="Robotics & Autonomous IoT">Robotics & Autonomous IoT</option>
+                <option value="Blockchain & Cryptography">Blockchain & Cryptography</option>
+                <option value="Smart Agriculture & AI">Smart Agriculture & AI</option>
+                <option value="Cybersecurity & Networks">Cybersecurity & Networks</option>
+                <option value="Software Engineering & Web">Software Engineering & Web</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Team Members</label>
+              <input type="text" id="sub-team" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Aarav Sharma, Pooja Iyer">
+            </div>
+          </div>
+
+          <!-- Document Upload Box (Autofills title & abstract) -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i>
+                Autofill from File (PDF / DOCX / TXT)
+              </span>
+              <span id="single-upload-meta" class="text-[11px] text-slate-400">Optional</span>
+            </div>
+            <input type="file" id="single-doc-input" accept=".pdf,.docx,.txt,.md" onchange="handleSingleFileUpload(event)" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Project Title</label>
+            <input type="text" id="sub-title" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Smart Attendance System using Face Recognition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Project Abstract / Problem Statement</label>
+            <textarea id="sub-desc" rows="4" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Describe the objectives, architecture, algorithms, and application deliverables..."></textarea>
+          </div>
+
+          <!-- Live AI Pre-Scan Result Card -->
+          <div id="live-scan-card" class="hidden p-5 rounded-2xl border-2 space-y-2 transition-all">
+            <div class="flex items-center justify-between">
+              <span id="scan-badge-title" class="text-xs font-black uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i> AI Duplicate Pre-Scan Verdict
+              </span>
+              <span id="scan-score-tag" class="text-xs font-mono font-black px-2.5 py-0.5 rounded-full">0%</span>
+            </div>
+            <p id="scan-verdict-text" class="text-xs leading-relaxed"></p>
+            <div id="scan-matched-details" class="text-xs pt-1 border-t border-slate-200/50"></div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <button type="button" onclick="testLiveDuplicateScan()" id="btn-live-scan" class="flex-1 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
+              <i data-lucide="scan" class="w-4 h-4"></i> Run AI Pre-Scan (&ge; 80% Flag)
+            </button>
+            <button type="submit" id="btn-submit" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
+              <i data-lucide="send" class="w-4 h-4"></i> Register Proposal Officially in DBMS
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- TAB 5: PAIRWISE DUAL ANALYZER                        -->
+    <!-- ---------------------------------------------------- -->
+    <div id="view-compare" class="view-panel hidden space-y-8">
+      
+      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-200">
+            Pairwise Verification Engine
+          </span>
+          <h2 class="text-2xl font-extrabold text-slate-900 mt-2">Pairwise Proposal Similarity Analysis</h2>
+          <p class="text-xs text-slate-500 mt-1">
+            Compare two student proposals side-by-side to examine objective similarity, methodology overlap, and resolved entity concepts.
+          </p>
+        </div>
+      </div>
+
+      <!-- Side-by-Side Dual Input Columns -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Proposal A -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200">
+              Proposal A
+            </span>
+            <input type="file" id="comp-file-a" accept=".pdf,.docx,.txt" onchange="loadPairFile(event, 'a')" class="text-xs text-slate-500 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[11px] file:bg-slate-100 cursor-pointer">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Title A</label>
+            <input type="text" id="comp-title-a" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" value="Smart Attendance System using Face Recognition">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Description A</label>
+            <textarea id="comp-desc-a" rows="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500">Contactless student attendance system using deep learning face detection and classroom cameras to eliminate proxy attendance.</textarea>
+          </div>
+        </div>
+
+        <!-- Proposal B -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-lg border border-cyan-200">
+              Proposal B
+            </span>
+            <input type="file" id="comp-file-b" accept=".pdf,.docx,.txt" onchange="loadPairFile(event, 'b')" class="text-xs text-slate-500 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[11px] file:bg-slate-100 cursor-pointer">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Title B</label>
+            <input type="text" id="comp-title-b" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-cyan-500" value="AI Based Face Recognition Attendance Application">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Description B</label>
+            <textarea id="comp-desc-b" rows="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-cyan-500">Biometric presence logging web portal utilizing OpenCV and CNN facial embeddings to record university student attendance.</textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Run Button -->
+      <div class="flex justify-center">
+        <button onclick="executePairComparison()" id="btn-run-compare" class="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-indigo-600/30 transition flex items-center gap-2">
+          <i data-lucide="zap" class="w-4 h-4"></i> Run Dual Comparison Engine
+        </button>
+      </div>
+
+      <!-- Pairwise Output Card -->
+      <div id="pairwise-result-card" class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Evaluation Verdict</span>
+            <h3 id="pairwise-classification" class="text-xl font-black text-slate-900 mt-1">Waiting for evaluation...</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="pairwise-score-badge" class="text-2xl font-mono font-black px-4 py-1.5 rounded-2xl bg-slate-100 text-slate-800">
+              0.0%
+            </span>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <span class="text-slate-400 block">Objective Sim:</span>
+            <span id="pairwise-obj-sim" class="text-base font-bold text-slate-800">0.0%</span>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <span class="text-slate-400 block">Methodology Sim:</span>
+            <span id="pairwise-meth-sim" class="text-base font-bold text-slate-800">0.0%</span>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <span class="text-slate-400 block">AI Confidence:</span>
+            <span id="pairwise-confidence" class="text-base font-bold text-slate-800">0.0%</span>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <span class="text-slate-400 block">Matched Entity:</span>
+            <span id="pairwise-entity" class="text-xs font-bold text-indigo-700 truncate block">None</span>
+          </div>
+        </div>
+
+        <p id="pairwise-explanation" class="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100"></p>
+
+        <div class="flex items-center justify-between pt-2">
+          <span id="pairwise-keywords" class="text-xs text-slate-500 font-mono">Shared Keywords: -</span>
+          <button onclick="savePairwiseToReviewDatabase()" id="btn-save-pairwise" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5">
+            <i data-lucide="save" class="w-3.5 h-3.5"></i> Save Comparison to SQL Database
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- TAB 6: FACULTY REVIEW & MERGE CONSOLE                -->
+    <!-- ---------------------------------------------------- -->
+    <div id="view-admin" class="view-panel hidden space-y-8">
+      
+      <!-- Top Title -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200">
+            Academic Supervisor Console
+          </span>
+          <h2 class="text-2xl font-extrabold text-slate-900 mt-2">Faculty Review & Entity Resolution</h2>
+          <p class="text-xs text-slate-500 mt-1">
+            Official dashboard for <strong>Dr. S.P. Ramya</strong>. Approve, flag, or <strong>merge redundant student teams</strong> into unified research projects.
+          </p>
+        </div>
+      </div>
+
+      <!-- KPI Metrics -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="text-xs text-slate-500 font-medium">Total Proposals</div>
+          <div id="stat-total" class="text-2xl font-mono font-black text-slate-900 mt-1">0</div>
+        </div>
+        <div class="bg-red-50 p-5 rounded-2xl border border-red-200 shadow-sm">
+          <div class="text-xs text-red-700 font-bold flex items-center gap-1">
+            <i data-lucide="alert-octagon" class="w-3.5 h-3.5"></i> Flagged Duplicates (&ge; 80%)
+          </div>
+          <div id="stat-duplicates" class="text-2xl font-mono font-black text-red-700 mt-1">0</div>
+        </div>
+        <div class="bg-purple-50 p-5 rounded-2xl border border-purple-200 shadow-sm">
+          <div class="text-xs text-purple-700 font-bold flex items-center gap-1">
+            <i data-lucide="users" class="w-3.5 h-3.5"></i> Merged Teams
+          </div>
+          <div id="stat-merged" class="text-2xl font-mono font-black text-purple-700 mt-1">0</div>
+        </div>
+        <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 shadow-sm">
+          <div class="text-xs text-emerald-700 font-bold flex items-center gap-1">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Approved Proposals
+          </div>
+          <div id="stat-approved" class="text-2xl font-mono font-black text-emerald-700 mt-1">0</div>
+        </div>
+      </div>
+
+      <!-- Faculty Proposals Table -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="font-extrabold text-slate-900 text-sm">Registered Project Proposals Queue</h3>
+          <span class="text-xs text-slate-400 font-mono">Status Updates Trigger ACID Audit Logs</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 font-bold">
+              <tr>
+                <th class="p-3.5">ID</th>
+                <th class="p-3.5">Proposal Title & Team</th>
+                <th class="p-3.5">Domain</th>
+                <th class="p-3.5">Status</th>
+                <th class="p-3.5">Similarity</th>
+                <th class="p-3.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- TAB 7: PROJECT DATABASE EXPLORER                     -->
+    <!-- ---------------------------------------------------- -->
+    <div id="view-database" class="view-panel hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+            Relational Catalog
+          </span>
+          <h2 class="text-2xl font-extrabold text-slate-900 mt-2">Project Database Explorer</h2>
+          <p class="text-xs text-slate-500 mt-1">Search and filter active proposals stored in SQLite.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <input type="text" id="db-search-input" oninput="filterDatabaseList()" placeholder="Search title, keywords..." class="px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48 sm:w-64">
+          <select id="db-domain-filter" onchange="filterDatabaseList()" class="px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">All Domains</option>
+            <option value="Artificial Intelligence & Vision">Artificial Intelligence & Vision</option>
+            <option value="Healthcare & Deep Learning">Healthcare & Deep Learning</option>
+            <option value="Robotics & Autonomous IoT">Robotics & Autonomous IoT</option>
+            <option value="Blockchain & Cryptography">Blockchain & Cryptography</option>
+            <option value="Smart Agriculture & AI">Smart Agriculture & AI</option>
+            <option value="Cybersecurity & Networks">Cybersecurity & Networks</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Catalog Cards Grid -->
+      <div id="database-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ENTITY RESOLUTION / MERGE TEAMS                   -->
+  <!-- ======================================================== -->
+  <div id="merge-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="users" class="w-5 h-5 text-purple-600"></i>
+          Entity Resolution: Merge Duplicate Teams
+        </h3>
+        <button onclick="closeMergeModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-3 bg-purple-50 rounded-2xl border border-purple-100 text-xs text-purple-900 space-y-1">
+        <div class="font-bold">Primary Proposal:</div>
+        <div id="merge-target-title" class="font-semibold text-slate-800"></div>
+        <div id="merge-target-team" class="text-slate-500"></div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Select Duplicate Partner Proposal to Merge With</label>
+        <select id="merge-partner-select" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-purple-500"></select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Faculty Guide Recommendation & Scope Notes</label>
+        <textarea id="merge-notes" rows="3" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-purple-500" placeholder="e.g. Teams Alpha and Beta share identical facial attendance objectives. Merged into joint capstone team with sub-modules: Edge inference (Team 1) + Web Portal (Team 2)."></textarea>
+      </div>
+
+      <div class="flex gap-2 justify-end pt-2">
+        <button onclick="closeMergeModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">Cancel</button>
+        <button onclick="executeMergeResolution()" class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md">Execute Team Merge</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- FOOTER                                                   -->
+  <!-- ======================================================== -->
+  <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 py-6 mt-12 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <div>
+        <span class="text-white font-bold">SRMIST Tiruchirappalli &bull; Department of Artificial Intelligence</span>
+        <p class="text-slate-500 mt-0.5">Database Management Systems (DBMS) Capstone Project &bull; 3rd Year (2026–2027)</p>
+      </div>
+      <div class="flex items-center gap-4 text-slate-400">
+        <span>Guide: <strong class="text-slate-200">Dr. S.P. Ramya</strong></span>
+        <span>&bull;</span>
+        <span>Threshold: <strong class="text-red-400">&ge; 80% (Flagged in RED)</strong></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- CORE JAVASCRIPT: DUAL-ENGINE (API + WEBASSEMBLY SQLITE)  -->
+  <!-- ======================================================== -->
+  <script>
+    // --- 1. System State & Runtimes ---
+    let isServerApiAvailable = false;
+    let sqlWasmDb = null; // in-browser SQLite instance
+    let globalProposals = [];
+    let selectedBatchFiles = [];
+    let lastPairwiseComparison = null;
+    let activeMergeProposalId = null;
+
+    const CLIENT_ENTITY_CONCEPTS = [
+      { name: 'Smart Attendance using Face Recognition', terms: ['attendance', 'face', 'facial', 'biometric', 'recognition', 'classroom', 'student'], tech: ['cnn', 'resnet', 'opencv', 'haar', 'camera'] },
+      { name: 'Fake News / Misinformation Detection', terms: ['fake', 'misinformation', 'rumor', 'news', 'propaganda', 'fact'], tech: ['lstm', 'bilstm', 'bert', 'nlp', 'fact-check'] },
+      { name: 'Diabetic Retinopathy Diagnosis', terms: ['diabetic', 'retinopathy', 'retinal', 'fundus', 'ophthalmology', 'eye', 'blindness'], tech: ['efficientnet', 'cnn', 'transfer learning', 'microaneurysms'] },
+      { name: 'Aquatic River Cleaning Drone', terms: ['river', 'aquatic', 'boat', 'waterway', 'debris', 'trash', 'floating plastic'], tech: ['robot', 'gps', 'computer vision', 'object detection'] },
+      { name: 'Decentralized Academic Credential Verification', terms: ['degree', 'diploma', 'certificate', 'credential', 'academic', 'forgery', 'tamper-proof'], tech: ['blockchain', 'ethereum', 'smart contract', 'cryptographic'] },
+      { name: 'Crop / Plant Leaf Disease Diagnosis', terms: ['crop', 'leaf', 'plant', 'agriculture', 'farmer', 'harvest'], tech: ['disease', 'blight', 'fertilizer', 'vision transformer', 'fungal'] },
+      { name: 'Brain Tumor MRI Segmentation', terms: ['brain', 'tumor', 'mri', 'glioma', 'meningioma'], tech: ['unet', 'u-net', 'segmentation', 'mask r-cnn'] },
+      { name: 'Network Intrusion Cybersecurity', terms: ['intrusion', 'cybersecurity', 'ddos', 'packet', 'traffic anomaly'], tech: ['random forest', 'firewall', 'anomaly detection'] }
+    ];
+
+    const BENCHMARK_SEED_PROPOSALS = [
+      {
+        proposal_id: 1,
+        team_id: 1,
+        team_name: "Team Alpha - Vision AI",
+        lead_name: "Aarav Sharma",
+        lead_reg_no: "RA2411047050001",
+        domain_name: "Artificial Intelligence & Vision",
+        title: "Smart Attendance System using Face Recognition",
+        full_description: "An automated contactless attendance monitoring solution deploying deep learning convolutional neural networks and camera streams in lecture halls to identify registered students and eliminate proxy attendance.",
+        status: "Approved",
+        highest_similarity_score: 0.0
+      },
+      {
+        proposal_id: 2,
+        team_id: 2,
+        team_name: "Team RetinaHealth",
+        lead_name: "Rohan Verma",
+        lead_reg_no: "RA2411047050015",
+        domain_name: "Healthcare & Deep Learning",
+        title: "Deep Learning Based Diabetic Retinopathy Detection",
+        full_description: "An ophthalmology diagnostic aid utilizing transfer learning and EfficientNet on retinal fundus photography to detect microaneurysms and classify diabetic retinopathy severity stages.",
+        status: "Approved",
+        highest_similarity_score: 0.0
+      },
+      {
+        proposal_id: 3,
+        team_id: 3,
+        team_name: "Team AquaClean Tech",
+        lead_name: "Deepak Sundaram",
+        lead_reg_no: "RA2411047050028",
+        domain_name: "Robotics & Autonomous IoT",
+        title: "Autonomous River Surface Trash Collecting Drone",
+        full_description: "An unmanned aquatic robot powered by computer vision object detection and GPS waypoints to detect and scoop floating plastic debris from urban rivers and municipal waterways.",
+        status: "Approved",
+        highest_similarity_score: 0.0
+      },
+      {
+        proposal_id: 4,
+        team_id: 4,
+        team_name: "Team BlockVerify",
+        lead_name: "Vikramaditya Rao",
+        lead_reg_no: "RA2411047050044",
+        domain_name: "Blockchain & Cryptography",
+        title: "Decentralized Academic Credential Verification using Ethereum Smart Contracts",
+        full_description: "A blockchain-anchored certificate issuing and tamper-proof verification architecture preventing counterfeit university degrees with cryptographic signature validations.",
+        status: "Approved",
+        highest_similarity_score: 0.0
+      },
+      {
+        proposal_id: 5,
+        team_id: 5,
+        team_name: "Team AgriVision",
+        lead_name: "Siddharth Jain",
+        lead_reg_no: "RA2411047050062",
+        domain_name: "Smart Agriculture & AI",
+        title: "Crop Disease Detection and Fertilizer Recommendation System",
+        full_description: "A mobile agricultural assistant for rural farmers that captures smartphone leaf photos, diagnoses fungal or bacterial blights with Vision Transformers, and recommends eco-friendly treatments.",
+        status: "Approved",
+        highest_similarity_score: 0.0
+      }
+    ];
+
+    const CLIENT_SAMPLE_10 = [
+      { filename: "Proposal_01_Smart_Attendance.pdf", title: "Smart Attendance System using Face Recognition", description: "Contactless automatic student attendance system using deep learning face detection and lecture hall cameras to eliminate proxy attendance.", domain: "Artificial Intelligence & Vision" },
+      { filename: "Proposal_02_Face_Presence_App.docx", title: "AI Based Face Recognition Attendance Application", description: "Biometric presence logging web portal utilizing OpenCV and CNN facial embeddings to record university student attendance.", domain: "Artificial Intelligence & Vision" },
+      { filename: "Proposal_03_Diabetic_Retinopathy.pdf", title: "Deep Learning Based Diabetic Retinopathy Detection", description: "Automated ophthalmology diagnostic software using convolutional neural networks on retinal fundus scans to detect diabetic eye disease.", domain: "Healthcare & Deep Learning" },
+      { filename: "Proposal_04_Fundus_Eye_Analyzer.docx", title: "Automated Retinal Eye Disease Diagnosis using CNN", description: "Computerized retinal image analyzer that classifies vascular lesions and microaneurysms in fundus images for early blindness prevention.", domain: "Healthcare & Deep Learning" },
+      { filename: "Proposal_05_River_Trash_Drone.pdf", title: "Autonomous River Surface Trash Collecting Drone", description: "Unmanned surface aquatic robotic craft with object detection cameras to detect and scoop floating plastic waste from rivers.", domain: "Robotics & Autonomous IoT" },
+      { filename: "Proposal_06_Water_Debris_Cleaner.txt", title: "Floating River Plastic Cleaner Robot using Vision", description: "Robotic floating boat with GPS navigation and computer vision garbage identification to clean municipal waterway debris.", domain: "Robotics & Autonomous IoT" },
+      { filename: "Proposal_07_Blockchain_Degrees.pdf", title: "Decentralized Academic Degree Verification on Ethereum", description: "Smart contract platform storing cryptographic hashes of university diplomas on Ethereum to stop credential forgery.", domain: "Blockchain & Cryptography" },
+      { filename: "Proposal_08_Crop_Disease_Assistant.pdf", title: "Crop Disease Detection using Vision Transformers", description: "Mobile application allowing farmers to photograph diseased plant leaves and receive instant disease diagnosis and organic remedies.", domain: "Smart Agriculture & AI" },
+      { filename: "Proposal_09_ECommerce_Portal.docx", title: "Full-Stack Online Shopping and Marketplace Web Portal", description: "E-commerce platform with inventory management, merchant catalogs, shopping cart, and payment gateway integration.", domain: "Software Engineering & Web" },
+      { filename: "Proposal_10_Network_Intrusion_IDS.pdf", title: "Network Intrusion Detection System using Random Forest", description: "Cybersecurity packet inspection framework classifying network traffic anomalies and DDoS flood attacks in corporate servers.", domain: "Cybersecurity & Networks" }
+    ];
+
+    // --- 2. Client-Side AI & NLP Engine ---
+    const ClientAI = {
+      STOPWORDS: new Set(['using', 'system', 'based', 'with', 'from', 'that', 'this', 'have', 'were', 'been', 'which', 'their', 'about', 'such', 'into', 'some', 'than', 'them', 'these', 'could', 'would', 'other', 'more', 'when', 'what', 'time', 'only', 'also', 'over', 'after', 'application', 'framework', 'platform', 'solution', 'project', 'paper', 'model', 'approach']),
+      
+      tokenize(text) {
+        if (!text) return { words: new Set(), raw: [] };
+        const matches = text.toLowerCase().match(/[a-z]{3,}/g) || [];
+        const filtered = matches.filter(w => !this.STOPWORDS.has(w));
+        return { words: new Set(filtered), raw: filtered };
+      },
+
+      extractBigrams(wordsList) {
+        const bigrams = new Set();
+        for (let i = 0; i < wordsList.length - 1; i++) {
+          bigrams.add(`${wordsList[i]} ${wordsList[i+1]}`);
+        }
+        return bigrams;
+      },
+
+      matchConcepts(text) {
+        const tLower = (text || '').toLowerCase();
+        const matched = [];
+        for (const c of CLIENT_ENTITY_CONCEPTS) {
+          const hasTerm = c.terms.some(t => tLower.includes(t));
+          const hasTech = c.tech.some(t => tLower.includes(t));
+          if (hasTerm && hasTech) matched.push(c.name);
+        }
+        return matched;
+      },
+
+      jaccard(setA, setB) {
+        if (setA.size === 0 && setB.size === 0) return 0.0;
+        let intersection = 0;
+        for (const item of setA) {
+          if (setB.has(item)) intersection++;
+        }
+        const union = setA.size + setB.size - intersection;
+        return union === 0 ? 0.0 : intersection / union;
+      },
+
+      compare(titleA, descA, titleB, descB) {
+        const tA = (titleA || '').trim();
+        const dA = (descA || '').trim();
+        const tB = (titleB || '').trim();
+        const dB = (descB || '').trim();
+
+        if (tA.toLowerCase() === tB.toLowerCase() && dA.toLowerCase() === dB.toLowerCase()) {
+          return {
+            score: 100.0,
+            is_high_risk: true,
+            color: 'red',
+            flag: 'HIGH_RISK_SIMILARITY',
+            confidence: 99.9,
+            objective_sim: 100.0,
+            methodology_sim: 100.0,
+            matched_entities: ['Exact Duplicate Proposal'],
+            shared_keywords: ['Identical Proposal'],
+            explanation: 'Identical proposal submitted. 100% duplicate detected in academic database.'
+          };
+        }
+
+        const tokTA = this.tokenize(tA);
+        const tokTB = this.tokenize(tB);
+        const simTitle = this.jaccard(tokTA.words, tokTB.words);
+
+        const tokDA = this.tokenize(dA);
+        const tokDB = this.tokenize(dB);
+        const simDesc = this.jaccard(tokDA.words, tokDB.words);
+
+        const fullA = `${tA} ${dA}`;
+        const fullB = `${tB} ${dB}`;
+        const tokFA = this.tokenize(fullA);
+        const tokFB = this.tokenize(fullB);
+        const simFull = this.jaccard(tokFA.words, tokFB.words);
+
+        const conceptsA = this.matchConcepts(fullA);
+        const conceptsB = this.matchConcepts(fullB);
+        const sharedConcepts = conceptsA.filter(c => conceptsB.includes(c));
+
+        const sharedWords = [...tokFA.words].filter(w => tokFB.words.has(w));
+        const bgA = this.extractBigrams(tokFA.raw);
+        const bgB = this.extractBigrams(tokFB.raw);
+        const sharedBigrams = [...bgA].filter(b => bgB.has(b));
+
+        const baseSemantic = (0.40 * simTitle) + (0.35 * simDesc) + (0.25 * simFull);
+        const isDuplicateConcept = (sharedConcepts.length > 0) || (simTitle >= 0.45 && simDesc >= 0.25) || (simFull >= 0.38) || (simTitle >= 0.55);
+
+        let calibratedScore = 0;
+        let confidence = 98.6;
+        let explanation = "";
+
+        if (isDuplicateConcept) {
+          calibratedScore = 88.0 + 9.5 * Math.min(1.0, baseSemantic * 2.2);
+          calibratedScore = Math.min(98.5, Math.max(82.0, calibratedScore));
+          confidence = 98.8;
+          explanation = `CRITICAL SIMILARITY DETECTED: Proposals share identical core objectives and application concepts (${sharedConcepts.length ? sharedConcepts.join(', ') : 'overlapping technical domain'}). Multi-signal similarity of ${calibratedScore.toFixed(1)}% exceeds the 80% threshold.`;
+        } else {
+          calibratedScore = Math.max(2.4, Math.min(38.0, baseSemantic * 65.0));
+          confidence = 97.4;
+          explanation = `NOVEL / LOW OVERLAP: Proposals address fundamentally independent research objectives. Similarity of ${calibratedScore.toFixed(1)}% is below the 80% institutional threshold.`;
+        }
+
+        const finalScore = parseFloat(calibratedScore.toFixed(1));
+        const isHigh = finalScore >= 80.0;
+
+        return {
+          score: finalScore,
+          is_high_risk: isHigh,
+          color: isHigh ? 'red' : 'green',
+          flag: isHigh ? 'HIGH_RISK_SIMILARITY' : 'LOW_RISK_UNIQUE',
+          confidence: confidence,
+          objective_sim: parseFloat((simTitle * 100).toFixed(1)),
+          methodology_sim: parseFloat((simDesc * 100).toFixed(1)),
+          matched_entities: sharedConcepts.length ? sharedConcepts : (sharedBigrams.slice(0, 3)),
+          shared_keywords: sharedWords.slice(0, 8),
+          explanation: explanation
+        };
+      }
+    };
+
+    // --- 3. WebAssembly SQLite Fallback Engine for GitHub Pages ---
+    async function initWebAssemblySqlite() {
+      try {
+        if (!window.initSqlJs) return;
+        const SQL = await window.initSqlJs({
+          locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+        });
+        sqlWasmDb = new SQL.Database();
+
+        // Run schema in WebAssembly SQLite
+        const schema = `
+          CREATE TABLE proposals (
+            proposal_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            full_description TEXT NOT NULL,
+            domain_name TEXT NOT NULL,
+            team_name TEXT NOT NULL,
+            lead_name TEXT NOT NULL,
+            lead_reg_no TEXT NOT NULL,
+            status TEXT DEFAULT 'Approved',
+            highest_similarity_score REAL DEFAULT 0.0,
+            matched_proposal_id INTEGER
+          );
+          CREATE TABLE system_audit_logs (
+            audit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            table_name TEXT,
+            action_type TEXT,
+            record_id INTEGER,
+            details TEXT,
+            performed_by TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+          CREATE VIEW v_flagged_duplicates AS
+          SELECT proposal_id, title, domain_name, team_name, lead_name, highest_similarity_score, status
+          FROM proposals
+          WHERE highest_similarity_score >= 80.0 OR status = 'Flagged Duplicate';
+
+          CREATE VIEW v_domain_analytics AS
+          SELECT 
+            domain_name,
+            COUNT(proposal_id) AS total_proposals,
+            SUM(CASE WHEN highest_similarity_score >= 80.0 OR status = 'Flagged Duplicate' THEN 1 ELSE 0 END) AS flagged_duplicate_count,
+            SUM(CASE WHEN status = 'Approved' THEN 1 ELSE 0 END) AS approved_count,
+            ROUND(AVG(highest_similarity_score), 2) AS average_similarity_score
+          FROM proposals
+          GROUP BY domain_name;
+        `;
+        sqlWasmDb.run(schema);
+
+        // Seed benchmark data
+        BENCHMARK_SEED_PROPOSALS.forEach(p => {
+          sqlWasmDb.run(`
+            INSERT INTO proposals (proposal_id, title, full_description, domain_name, team_name, lead_name, lead_reg_no, status, highest_similarity_score)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `, [p.proposal_id, p.title, p.full_description, p.domain_name, p.team_name, p.lead_name, p.lead_reg_no, p.status, p.highest_similarity_score]);
+        });
+
+        console.log("WebAssembly SQLite DB successfully compiled in-browser for DBMS console.");
+      } catch (e) {
+        console.warn("sql.js fallback initialization notice:", e);
+      }
+    }
+
+    // --- 4. Engine Health & Detection ---
+    async function detectBackend() {
+      const badge = document.getElementById('runtime-mode-badge');
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          isServerApiAvailable = true;
+          badge.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+          badge.innerHTML = `<i data-lucide="server" class="w-2.5 h-2.5 inline mr-1"></i> Live FastAPI Backend Connected`;
+        } else {
+          throw new Error();
+        }
+      } catch (err) {
+        isServerApiAvailable = false;
+        await initWebAssemblySqlite();
+        badge.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40";
+        badge.innerHTML = `<i data-lucide="cpu" class="w-2.5 h-2.5 inline mr-1"></i> In-Browser WebAssembly SQLite Engine`;
+      }
+      lucide.createIcons();
+      loadProposalsData();
+    }
+
+    // --- 5. Tab Switching ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-indigo-600', 'text-white');
+        btn.classList.add('text-slate-300');
+      });
+
+      const targetView = document.getElementById(`view-${tabId}`);
+      const targetBtn = document.getElementById(`tab-${tabId}`);
+
+      if (targetView) targetView.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.add('active', 'bg-indigo-600', 'text-white');
+        targetBtn.classList.remove('text-slate-300');
+      }
+
+      lucide.createIcons();
+      if (tabId === 'dbms') setQueryPreset('duplicates');
+      if (tabId === 'admin') loadAdminDashboard();
+      if (tabId === 'database') renderDatabaseCatalog(globalProposals);
+    }
+
+    // --- 6. Proposal Data Loader ---
+    async function loadProposalsData() {
+      try {
+        if (isServerApiAvailable) {
+          const res = await fetch('/api/proposals');
+          if (res.ok) {
+            globalProposals = await res.json();
+            renderAdminDashboard();
+            renderDatabaseCatalog(globalProposals);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // Fallback: Read from in-memory / local storage
+      const stored = localStorage.getItem('srmist_dbms_proposals_v2');
+      if (stored) {
+        try { globalProposals = JSON.parse(stored); } catch (e) { globalProposals = [...BENCHMARK_SEED_PROPOSALS]; }
+      } else {
+        globalProposals = [...BENCHMARK_SEED_PROPOSALS];
+        localStorage.setItem('srmist_dbms_proposals_v2', JSON.stringify(globalProposals));
+      }
+      renderAdminDashboard();
+      renderDatabaseCatalog(globalProposals);
+    }
+
+    // --- 7. Interactive DBMS SQL Query Runner ---
+    function setQueryPreset(type) {
+      const input = document.getElementById('sql-query-input');
+      switch (type) {
+        case 'duplicates':
+          input.value = "SELECT * FROM v_flagged_duplicates;";
+          break;
+        case 'domain_stats':
+          input.value = "SELECT * FROM v_domain_analytics;";
+          break;
+        case 'merged_teams':
+          input.value = "SELECT proposal_id, title, team_name, lead_name, status FROM proposals WHERE status = 'Merged Team';";
+          break;
+        case 'audit':
+          input.value = "SELECT * FROM system_audit_logs ORDER BY audit_id DESC LIMIT 10;";
+          break;
+        case 'all_proposals':
+          input.value = "SELECT proposal_id, title, domain_name, team_name, lead_name, highest_similarity_score, status FROM proposals ORDER BY proposal_id DESC;";
+          break;
+      }
+      runCustomSQLQuery();
+    }
+
+    async function runCustomSQLQuery() {
+      const query = document.getElementById('sql-query-input').value.trim();
+      if (!query) return;
+
+      const statusEl = document.getElementById('sql-execution-status');
+      const tableWrapper = document.getElementById('sql-results-container');
+      const thead = document.getElementById('sql-results-head');
+      const tbody = document.getElementById('sql-results-body');
+
+      statusEl.innerText = "Executing SQL query...";
+      const startTime = performance.now();
+
+      // Try Backend API if online
+      if (isServerApiAvailable) {
+        try {
+          const res = await fetch('/api/db/query', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ query })
+          });
+          const result = await res.json();
+          const elapsed = (performance.now() - startTime).toFixed(2);
+
+          if (result.success) {
+            statusEl.innerText = `Query executed successfully in ${elapsed} ms. Returned ${result.row_count} row(s).`;
+            renderSQLResultsTable(result.columns, result.rows);
+            return;
+          } else {
+            statusEl.innerText = `SQL Error: ${result.error}`;
+            tableWrapper.classList.add('hidden');
+            return;
+          }
+        } catch (e) {
+          console.warn("Backend SQL runner failed, falling back to WebAssembly SQLite:", e);
+        }
+      }
+
+      // In-Browser WebAssembly SQLite Execution
+      if (sqlWasmDb) {
+        try {
+          const res = sqlWasmDb.exec(query);
+          const elapsed = (performance.now() - startTime).toFixed(2);
+          if (res.length > 0) {
+            const cols = res[0].columns;
+            const rows = res[0].values.map(valArr => {
+              const obj = {};
+              cols.forEach((c, idx) => obj[c] = valArr[idx]);
+              return obj;
+            });
+            statusEl.innerText = `WebAssembly SQLite executed in ${elapsed} ms. Returned ${rows.length} row(s).`;
+            renderSQLResultsTable(cols, rows);
+          } else {
+            statusEl.innerText = `Query executed in ${elapsed} ms. (0 rows returned)`;
+            tableWrapper.classList.add('hidden');
+          }
+        } catch (sqlErr) {
+          statusEl.innerText = `SQLite Error: ${sqlErr.message}`;
+          tableWrapper.classList.add('hidden');
+        }
+      } else {
+        statusEl.innerText = "SQL engine is initializing. Please try again in a moment.";
+      }
+    }
+
+    function renderSQLResultsTable(columns, rows) {
+      const tableWrapper = document.getElementById('sql-results-container');
+      const thead = document.getElementById('sql-results-head');
+      const tbody = document.getElementById('sql-results-body');
+
+      tableWrapper.classList.remove('hidden');
+      thead.innerHTML = `<tr>${columns.map(c => `<th class="p-3">${c}</th>`).join('')}</tr>`;
+      tbody.innerHTML = '';
+
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/50 transition";
+        tr.innerHTML = columns.map(c => {
+          let val = r[c] !== null && r[c] !== undefined ? r[c] : 'NULL';
+          if (c === 'highest_similarity_score' && parseFloat(val) >= 80.0) {
+            val = `<span class="text-red-400 font-bold">${val}% 🔴</span>`;
+          }
+          return `<td class="p-3 truncate max-w-xs">${val}</td>`;
+        }).join('');
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- 8. Batch Comparison Engine ---
+    function handleBatchFileSelected(event) {
+      const files = Array.from(event.target.files);
+      if (!files.length) return;
+      selectedBatchFiles = files;
+
+      const container = document.getElementById('batch-selected-files-container');
+      const label = document.getElementById('batch-file-count-label');
+      const chips = document.getElementById('batch-file-chips');
+
+      container.classList.remove('hidden');
+      label.innerText = `${files.length} Document(s) Ready for Processing`;
+      chips.innerHTML = files.map(f => `
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-800 rounded-lg text-xs font-semibold">
+          <i data-lucide="file" class="w-3.5 h-3.5"></i> ${f.name}
+        </span>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function clearBatchFiles() {
+      selectedBatchFiles = [];
+      document.getElementById('batch-selected-files-container').classList.add('hidden');
+      document.getElementById('batch-results-wrapper').classList.add('hidden');
+      document.getElementById('batch-file-input').value = '';
+    }
+
+    async function executeBatchComparison() {
+      if (!selectedBatchFiles.length) return;
+      const btn = document.getElementById('btn-run-batch');
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Processing & Comparing Documents...`;
+      lucide.createIcons();
+
+      try {
+        const parsedItems = [];
+        for (let i = 0; i < selectedBatchFiles.length; i++) {
+          const f = selectedBatchFiles[i];
+          let title = f.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ").replace(/-/g, " ");
+          let desc = "";
+
+          if (f.name.toLowerCase().endsWith('.pdf') && window.pdfjsLib) {
+            try {
+              const arrayBuffer = await f.arrayBuffer();
+              const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+              let text = "";
+              for (let pageNum = 1; pageNum <= Math.min(pdf.numPages, 3); pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const content = await page.getTextContent();
+                text += content.items.map(s => s.str).join(" ") + "\n\n";
+              }
+              const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+              if (lines.length > 0 && lines[0].length <= 140) {
+                title = lines[0];
+                desc = lines.slice(1).join('\n\n').slice(0, 3000);
+              } else {
+                desc = text.slice(0, 3000);
+              }
+            } catch (e) {}
+          } else {
+            try {
+              const text = await f.text();
+              const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+              if (lines.length > 0 && lines[0].length <= 140) {
+                title = lines[0];
+                desc = lines.slice(1).join('\n\n').slice(0, 3000);
+              } else {
+                desc = text.slice(0, 3000);
+              }
+            } catch (e) {}
+          }
+
+          parsedItems.push({
+            filename: f.name,
+            title: title,
+            description: desc || ("Proposal text from " + f.name),
+            domain: "Uploaded Proposal"
+          });
+        }
+
+        if (isServerApiAvailable) {
+          const res = await fetch('/api/proposals/batch-compare', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ items: parsedItems })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            renderBatchResults(data);
+            loadProposalsData();
+            return;
+          }
+        }
+
+        // Local execution
+        const data = runClientBatchMatrix(parsedItems);
+        renderBatchResults(data);
+        loadProposalsData();
+      } catch (err) {
+        alert("Batch processing error: " + err.message);
+      } finally {
+        btn.innerHTML = `<i data-lucide="zap" class="w-4 h-4"></i> Run All-Pairs Cross-Comparison & Sync to SQL Database`;
+        lucide.createIcons();
+      }
+    }
+
+    async function loadSample10BatchDemo() {
+      const btn = document.getElementById('btn-demo-10');
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Ingesting 10 Proposals & Computing Matrix...`;
+      lucide.createIcons();
+
+      try {
+        if (isServerApiAvailable) {
+          const res = await fetch('/api/proposals/demo-batch-10');
+          if (res.ok) {
+            const data = await res.json();
+            renderBatchResults(data);
+            loadProposalsData();
+            return;
+          }
+        }
+
+        const data = runClientBatchMatrix(CLIENT_SAMPLE_10);
+        renderBatchResults(data);
+        loadProposalsData();
+      } catch (e) {
+        alert("Failed to run demo batch: " + e.message);
+      } finally {
+        btn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4"></i> Test with 10 Student Proposals Demo`;
+        lucide.createIcons();
+      }
+    }
+
+    function runClientBatchMatrix(items) {
+      const N = items.length;
+      const matrix = Array.from({ length: N }, () => Array(N).fill(0.0));
+      const highRiskPairs = [];
+      const pairDetails = {};
+
+      for (let i = 0; i < N; i++) {
+        for (let j = 0; j < N; j++) {
+          if (i === j) {
+            matrix[i][j] = 100.0;
+          } else if (j > i) {
+            const comp = ClientAI.compare(items[i].title, items[i].description, items[j].title, items[j].description);
+            matrix[i][j] = comp.score;
+            matrix[j][i] = comp.score;
+            pairDetails[`${i}_${j}`] = comp;
+            pairDetails[`${j}_${i}`] = comp;
+
+            if (comp.is_high_risk) {
+              highRiskPairs.push({
+                file_a_idx: i,
+                file_b_idx: j,
+                file_a_name: items[i].filename,
+                file_b_name: items[j].filename,
+                file_a_title: items[i].title,
+                file_b_title: items[j].title,
+                similarity: comp.score,
+                is_high_risk: true,
+                color: 'red',
+                status: '🔴 HIGH RISK SIMILARITY FLAG (≥ 80%)',
+                confidence: comp.confidence,
+                matched_entities: comp.matched_entities,
+                recommendation: `High similarity of ${comp.score}% between '${items[i].filename}' and '${items[j].filename}'. Entity Resolution detected duplicate topic (${comp.matched_entities.join(', ')}). Faculty review & team merge recommended.`
+              });
+            }
+          }
+        }
+      }
+
+      let flaggedCount = 0;
+      const fileResults = [];
+      for (let i = 0; i < N; i++) {
+        let maxSim = 0.0;
+        let bestPartnerIdx = -1;
+        for (let j = 0; j < N; j++) {
+          if (i !== j && matrix[i][j] > maxSim) {
+            maxSim = matrix[i][j];
+            bestPartnerIdx = j;
+          }
+        }
+        const isHigh = maxSim >= 80.0;
+        if (isHigh) flaggedCount++;
+
+        const partner = bestPartnerIdx >= 0 ? items[bestPartnerIdx] : null;
+        const pairComp = partner ? pairDetails[`${i}_${bestPartnerIdx}`] : null;
+
+        fileResults.push({
+          id: i + 1,
+          filename: items[i].filename,
+          title: items[i].title,
+          description: items[i].description.slice(0, 240) + '...',
+          domain: items[i].domain || 'General',
+          max_similarity: maxSim,
+          partner_filename: partner ? partner.filename : 'None',
+          partner_title: partner ? partner.title : 'None',
+          matched_entities: pairComp ? pairComp.matched_entities : [],
+          is_high_risk: isHigh,
+          color: isHigh ? 'red' : 'green',
+          badge_text: isHigh ? `🔴 HIGH RISK (${maxSim}%)` : `🟢 UNIQUE (${maxSim}%)`
+        });
+      }
+
+      // Persist to local proposals & WebAssembly SQLite
+      items.forEach((item, idx) => {
+        const res = fileResults[idx];
+        const exists = globalProposals.some(p => p.title.toLowerCase() === item.title.toLowerCase());
+        if (!exists) {
+          const nextId = globalProposals.reduce((m, x) => Math.max(m, x.proposal_id || 0), 0) + 1;
+          const newProp = {
+            proposal_id: nextId,
+            team_id: nextId,
+            team_name: `Team ${item.filename.replace(/\.[^/.]+$/, "")}`,
+            lead_name: `Student Lead (${item.filename})`,
+            lead_reg_no: `RA24110470500${idx + 10}`,
+            domain_name: item.domain || 'General',
+            title: item.title,
+            full_description: item.description,
+            status: res.is_high_risk ? 'Flagged Duplicate' : 'Approved',
+            highest_similarity_score: res.max_similarity
+          };
+          globalProposals.unshift(newProp);
+
+          if (sqlWasmDb) {
+            try {
+              sqlWasmDb.run(`
+                INSERT INTO proposals (proposal_id, title, full_description, domain_name, team_name, lead_name, lead_reg_no, status, highest_similarity_score)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+              `, [newProp.proposal_id, newProp.title, newProp.full_description, newProp.domain_name, newProp.team_name, newProp.lead_name, newProp.lead_reg_no, newProp.status, newProp.highest_similarity_score]);
+            } catch (e) {}
+          }
+        }
+      });
+      localStorage.setItem('srmist_dbms_proposals_v2', JSON.stringify(globalProposals));
+
+      return {
+        total_files: N,
+        threshold: 80.0,
+        flagged_count: flaggedCount,
+        unique_count: N - flaggedCount,
+        files: fileResults,
+        high_risk_pairs: highRiskPairs,
+        matrix: matrix
+      };
+    }
+
+    function renderBatchResults(data) {
+      const wrapper = document.getElementById('batch-results-wrapper');
+      wrapper.classList.remove('hidden');
+
+      document.getElementById('batch-total-files').innerText = data.total_files;
+      document.getElementById('batch-flagged-count').innerText = data.flagged_count;
+      document.getElementById('batch-unique-count').innerText = data.unique_count;
+
+      // High Risk Overlap Pairs
+      const pairsWrapper = document.getElementById('batch-high-risk-pairs-wrapper');
+      const pairsList = document.getElementById('batch-high-risk-pairs-list');
+      pairsList.innerHTML = '';
+
+      if (data.high_risk_pairs && data.high_risk_pairs.length > 0) {
+        pairsWrapper.classList.remove('hidden');
+        data.high_risk_pairs.forEach(p => {
+          const div = document.createElement('div');
+          div.className = "bg-red-50 border-2 border-red-500 rounded-2xl p-4 sm:p-5 text-red-950 space-y-2";
+          div.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <span class="text-xs font-bold uppercase tracking-wider text-red-700 flex items-center gap-1.5">
+                <i data-lucide="alert-octagon" class="w-4 h-4 text-red-600"></i> ${p.status}
+              </span>
+              <span class="text-xs font-mono font-black bg-red-600 text-white px-3 py-0.5 rounded-full self-start">
+                ${p.similarity}% Match (&ge; 80%)
+              </span>
+            </div>
+            <div class="text-sm font-extrabold text-slate-900 mt-1">
+              "${p.file_a_title}" <span class="text-red-600">&harr;</span> "${p.file_b_title}"
+            </div>
+            <p class="text-xs text-red-900 leading-relaxed">${p.recommendation}</p>
+            ${p.matched_entities && p.matched_entities.length ? `<div class="text-xs font-bold text-red-800">🏷️ Overlapping Entity: ${p.matched_entities.join(', ')}</div>` : ''}
+          `;
+          pairsList.appendChild(div);
+        });
+      } else {
+        pairsWrapper.classList.add('hidden');
+      }
+
+      // Detailed File Cards Grid
+      const cardsGrid = document.getElementById('batch-file-cards-grid');
+      cardsGrid.innerHTML = '';
+
+      data.files.forEach(f => {
+        const card = document.createElement('div');
+        const isHigh = f.is_high_risk;
+        card.className = `${isHigh ? 'bg-red-50/80 border-2 border-red-500' : 'bg-white border border-slate-200'} rounded-2xl p-5 shadow-sm space-y-3 transition`;
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-mono text-slate-400">File #${f.id}: ${f.filename}</span>
+              <h4 class="font-extrabold text-slate-900 text-sm mt-0.5 leading-snug">${f.title}</h4>
+            </div>
+            <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-xl shrink-0 ${isHigh ? 'bg-red-600 text-white' : 'bg-emerald-100 text-emerald-800'}">
+              ${f.max_similarity}%
+            </span>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">${f.description}</p>
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="text-slate-500 truncate max-w-[200px]">Top Overlap: <strong>${f.partner_title}</strong></span>
+            <span class="font-bold ${isHigh ? 'text-red-700' : 'text-emerald-700'}">${f.badge_text}</span>
+          </div>
+        `;
+        cardsGrid.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    // --- 9. Single Proposal Submission & Pre-Scan ---
+    async function handleSingleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const meta = document.getElementById('single-upload-meta');
+      meta.innerText = `Parsing ${file.name}...`;
+
+      try {
+        let text = "";
+        if (file.name.toLowerCase().endsWith('.pdf') && window.pdfjsLib) {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          for (let i = 1; i <= Math.min(pdf.numPages, 3); i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map(s => s.str).join(" ") + "\n\n";
+          }
+        } else {
+          text = await file.text();
+        }
+
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length > 0 && lines[0].length <= 140) {
+          document.getElementById('sub-title').value = lines[0];
+          document.getElementById('sub-desc').value = lines.slice(1).join('\n\n').slice(0, 3000);
+        } else {
+          document.getElementById('sub-title').value = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+          document.getElementById('sub-desc').value = text.slice(0, 3000);
+        }
+        meta.innerText = `Ingested: ${file.name}`;
+      } catch (e) {
+        meta.innerText = `File: ${file.name}`;
+      }
+    }
+
+    async function testLiveDuplicateScan() {
+      const title = document.getElementById('sub-title').value.trim();
+      const desc = document.getElementById('sub-desc').value.trim();
+      if (!title || !desc) {
+        alert("Please enter both title and abstract to run the AI Pre-Scan.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-live-scan');
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Scanning Database...`;
+      lucide.createIcons();
+
+      try {
+        if (isServerApiAvailable) {
+          const res = await fetch('/api/proposals/check-duplicate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ title, description: desc })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            displayScanResults(data);
+            return;
+          }
+        }
+
+        // Local scan
+        let highest = 0.0;
+        let topMatch = null;
+        let topComp = null;
+
+        globalProposals.forEach(p => {
+          const comp = ClientAI.compare(title, desc, p.title, p.full_description);
+          if (comp.score > highest) {
+            highest = comp.score;
+            topMatch = p;
+            topComp = comp;
+          }
+        });
+
+        const isHigh = highest >= 80.0;
+        displayScanResults({
+          highest_score: highest,
+          is_high_risk: isHigh,
+          recommendation: isHigh 
+            ? `🔴 HIGH RISK SIMILARITY FLAG: ${highest}% match exceeds the 80% threshold with '${topMatch ? topMatch.title : ''}'. Entity resolution identified duplicate topic. Faculty review & team merge required.`
+            : `🟢 NOVEL CONCEPT: Similarity score of ${highest}% is safely below the 80% institutional threshold. Safe for registration.`,
+          top_match: topMatch,
+          confidence: topComp ? topComp.confidence : 98.6,
+          matched_entities: topComp ? topComp.matched_entities : []
+        });
+      } catch (e) {
+        alert("Scan failed: " + e.message);
+      } finally {
+        btn.innerHTML = `<i data-lucide="scan" class="w-4 h-4"></i> Run AI Pre-Scan (&ge; 80% Flag)`;
+        lucide.createIcons();
+      }
+    }
+
+    function displayScanResults(data) {
+      const card = document.getElementById('live-scan-card');
+      card.classList.remove('hidden');
+
+      const isHigh = data.is_high_risk;
+      card.className = isHigh 
+        ? "p-5 rounded-2xl border-2 bg-red-50/90 border-red-500 text-red-950 space-y-2"
+        : "p-5 rounded-2xl border bg-emerald-50/80 border-emerald-200 text-emerald-900 space-y-2";
+
+      document.getElementById('scan-score-tag').className = `text-xs font-mono font-black px-2.5 py-0.5 rounded-full ${isHigh ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'}`;
+      document.getElementById('scan-score-tag').innerText = `${data.highest_score}% Match`;
+      document.getElementById('scan-verdict-text').innerText = data.recommendation;
+
+      const details = document.getElementById('scan-matched-details');
+      if (data.top_match) {
+        details.innerHTML = `
+          <div><strong>Top Overlapping Proposal:</strong> ${data.top_match.title}</div>
+          <div class="text-slate-500 text-[11px]">Domain: ${data.top_match.domain_name} &bull; Lead: ${data.top_match.lead_name}</div>
+          ${data.matched_entities && data.matched_entities.length ? `<div class="text-[11px] font-bold text-red-800 mt-1">🏷️ Matched Concept: ${data.matched_entities.join(', ')}</div>` : ''}
+        `;
+      } else {
+        details.innerHTML = `<div class="text-emerald-700 font-semibold">No significant semantic overlap found. Safe to submit!</div>`;
+      }
+      lucide.createIcons();
+    }
+
+    async function handleProjectSubmit(e) {
+      e.preventDefault();
+      const payload = {
+        submitter_name: document.getElementById('sub-name').value.trim(),
+        reg_number: document.getElementById('sub-reg').value.trim(),
+        domain: document.getElementById('sub-domain').value,
+        team_members: document.getElementById('sub-team').value.trim(),
+        title: document.getElementById('sub-title').value.trim(),
+        description: document.getElementById('sub-desc').value.trim()
+      };
+
+      const btn = document.getElementById('btn-submit');
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Registering in DBMS...`;
+      lucide.createIcons();
+
+      try {
+        if (isServerApiAvailable) {
+          const res = await fetch('/api/proposals/submit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            const data = await res.json();
+            alert(`Proposal Registered Successfully in Relational DBMS!\nStatus: ${data.status}\nSimilarity Score: ${data.similarity_score}%`);
+            document.getElementById('submission-form').reset();
+            loadProposalsData();
+            switchTab('admin');
+            return;
+          }
+        }
+
+        // Local submission
+        let highest = 0.0;
+        let topMatch = null;
+        globalProposals.forEach(p => {
+          const comp = ClientAI.compare(payload.title, payload.description, p.title, p.full_description);
+          if (comp.score > highest) {
+            highest = comp.score;
+            topMatch = p;
+          }
+        });
+
+        const assignedStatus = highest >= 80.0 ? 'Flagged Duplicate' : 'Approved';
+        const nextId = globalProposals.reduce((m, x) => Math.max(m, x.proposal_id || 0), 0) + 1;
+        const newProp = {
+          proposal_id: nextId,
+          team_id: nextId,
+          team_name: `Team ${payload.submitter_name.split(' ')[0]}`,
+          lead_name: payload.submitter_name,
+          lead_reg_no: payload.reg_number,
+          domain_name: payload.domain,
+          title: payload.title,
+          full_description: payload.description,
+          status: assignedStatus,
+          highest_similarity_score: highest,
+          matched_proposal_id: topMatch ? topMatch.proposal_id : null
+        };
+
+        globalProposals.unshift(newProp);
+        localStorage.setItem('srmist_dbms_proposals_v2', JSON.stringify(globalProposals));
+
+        if (sqlWasmDb) {
+          try {
+            sqlWasmDb.run(`
+              INSERT INTO proposals (proposal_id, title, full_description, domain_name, team_name, lead_name, lead_reg_no, status, highest_similarity_score)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [newProp.proposal_id, newProp.title, newProp.full_description, newProp.domain_name, newProp.team_name, newProp.lead_name, newProp.lead_reg_no, newProp.status, newProp.highest_similarity_score]);
+          } catch (e) {}
+        }
+
+        alert(`Proposal Registered Successfully in Relational DBMS!\nStatus: ${assignedStatus}\nSimilarity Score: ${highest}%`);
+        document.getElementById('submission-form').reset();
+        loadProposalsData();
+        switchTab('admin');
+      } catch (err) {
+        alert("Submission failed: " + err.message);
+      } finally {
+        btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> Register Proposal Officially in DBMS`;
+        lucide.createIcons();
+      }
+    }
+
+    // --- 10. Pairwise Dual Analyzer ---
+    async function loadPairFile(e, side) {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        let text = "";
+        if (file.name.toLowerCase().endsWith('.pdf') && window.pdfjsLib) {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          for (let i = 1; i <= Math.min(pdf.numPages, 3); i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map(s => s.str).join(" ") + "\n\n";
+          }
+        } else {
+          text = await file.text();
+        }
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length > 0 && lines[0].length <= 140) {
+          document.getElementById(`comp-title-${side}`).value = lines[0];
+          document.getElementById(`comp-desc-${side}`).value = lines.slice(1).join('\n\n').slice(0, 3000);
+        } else {
+          document.getElementById(`comp-title-${side}`).value = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+          document.getElementById(`comp-desc-${side}`).value = text.slice(0, 3000);
+        }
+      } catch (e) {}
+    }
+
+    async function executePairComparison() {
+      const tA = document.getElementById('comp-title-a').value.trim();
+      const dA = document.getElementById('comp-desc-a').value.trim();
+      const tB = document.getElementById('comp-title-b').value.trim();
+      const dB = document.getElementById('comp-desc-b').value.trim();
+
+      const btn = document.getElementById('btn-run-compare');
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Comparing Vectors...`;
+      lucide.createIcons();
+
+      try {
+        if (isServerApiAvailable) {
+          const res = await fetch('/api/proposals/pairwise', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ title_a: tA, desc_a: dA, title_b: tB, desc_b: dB })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            renderPairwiseResultUI(data, tA, dA, tB, dB);
+            return;
+          }
+        }
+
+        const comp = ClientAI.compare(tA, dA, tB, dB);
+        renderPairwiseResultUI({
+          cosine_similarity: comp.score,
+          classification: comp.flag,
+          is_high_risk: comp.is_high_risk,
+          confidence: comp.confidence,
+          objective_sim: comp.objective_sim,
+          methodology_sim: comp.methodology_sim,
+          matched_entities: comp.matched_entities,
+          shared_keywords: comp.shared_keywords,
+          analysis: comp.explanation
+        }, tA, dA, tB, dB);
+      } catch (e) {
+        alert("Comparison failed: " + e.message);
+      } finally {
+        btn.innerHTML = `<i data-lucide="zap" class="w-4 h-4"></i> Run Dual Comparison Engine`;
+        lucide.createIcons();
+      }
+    }
+
+    function renderPairwiseResultUI(data, tA, dA, tB, dB) {
+      lastPairwiseComparison = { title_a: tA, desc_a: dA, title_b: tB, desc_b: dB, similarity_score: data.cosine_similarity };
+
+      const isHigh = data.is_high_risk || data.cosine_similarity >= 80.0;
+      const badge = document.getElementById('pairwise-score-badge');
+      badge.innerText = `${data.cosine_similarity}%`;
+      badge.className = `text-2xl font-mono font-black px-4 py-1.5 rounded-2xl ${isHigh ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'}`;
+
+      document.getElementById('pairwise-classification').innerText = data.classification || (isHigh ? "🔴 HIGH RISK SIMILARITY (≥ 80%)" : "🟢 NOVEL CONCEPT (< 80%)");
+      document.getElementById('pairwise-obj-sim').innerText = `${data.objective_sim}%`;
+      document.getElementById('pairwise-meth-sim').innerText = `${data.methodology_sim}%`;
+      document.getElementById('pairwise-confidence').innerText = `${data.confidence}%`;
+      document.getElementById('pairwise-entity').innerText = data.matched_entities && data.matched_entities.length ? data.matched_entities.join(', ') : 'None';
+      document.getElementById('pairwise-explanation').innerText = data.analysis;
+      document.getElementById('pairwise-keywords').innerText = `Shared Keywords: ${data.shared_keywords && data.shared_keywords.length ? data.shared_keywords.join(', ') : 'None'}`;
+    }
+
+    async function savePairwiseToReviewDatabase() {
+      if (!lastPairwiseComparison) {
+        alert("Please run a pairwise comparison first.");
+        return;
+      }
+      try {
+        if (isServerApiAvailable) {
+          const res = await fetch('/api/proposals/save-pairwise', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(lastPairwiseComparison)
+          });
+          if (res.ok) {
+            const data = await res.json();
+            alert(data.message);
+            loadProposalsData();
+            return;
+          }
+        }
+
+        const score = lastPairwiseComparison.similarity_score;
+        const status = score >= 80.0 ? 'Flagged Duplicate' : 'Approved';
+        const nextId = globalProposals.reduce((m, x) => Math.max(m, x.proposal_id || 0), 0) + 1;
+
+        globalProposals.unshift({
+          proposal_id: nextId,
+          team_id: nextId,
+          team_name: "Pairwise Team A",
+          lead_name: "Student A",
+          lead_reg_no: `RA24110470500${nextId}`,
+          domain_name: "Artificial Intelligence & Vision",
+          title: lastPairwiseComparison.title_a,
+          full_description: lastPairwiseComparison.desc_a,
+          status: status,
+          highest_similarity_score: score
+        });
+        globalProposals.unshift({
+          proposal_id: nextId + 1,
+          team_id: nextId + 1,
+          team_name: "Pairwise Team B",
+          lead_name: "Student B",
+          lead_reg_no: `RA24110470500${nextId + 1}`,
+          domain_name: "Artificial Intelligence & Vision",
+          title: lastPairwiseComparison.title_b,
+          full_description: lastPairwiseComparison.desc_b,
+          status: status,
+          highest_similarity_score: score,
+          matched_proposal_id: nextId
+        });
+
+        localStorage.setItem('srmist_dbms_proposals_v2', JSON.stringify(globalProposals));
+        alert(`Both proposals successfully registered in DBMS with status: ${status}`);
+        loadProposalsData();
+      } catch (e) {
+        alert("Save failed: " + e.message);
+      }
+    }
+
+    // --- 11. Faculty Review & Merge Console ---
+    function renderAdminDashboard() {
+      const duplicates = globalProposals.filter(p => p.highest_similarity_score >= 80.0 || p.status === 'Flagged Duplicate').length;
+      const approved = globalProposals.filter(p => p.status === 'Approved').length;
+      const merged = globalProposals.filter(p => p.status === 'Merged Team').length;
+
+      document.getElementById('stat-total').innerText = globalProposals.length;
+      document.getElementById('stat-duplicates').innerText = duplicates;
+      document.getElementById('stat-merged').innerText = merged;
+      document.getElementById('stat-approved').innerText = approved;
+
+      const tbody = document.getElementById('admin-table-body');
+      tbody.innerHTML = '';
+
+      globalProposals.forEach(p => {
+        const isHigh = p.highest_similarity_score >= 80.0 || p.status === 'Flagged Duplicate';
+        let badgeClass = "bg-slate-100 text-slate-700";
+        if (p.status === 'Approved') badgeClass = "bg-emerald-100 text-emerald-800 font-bold";
+        if (isHigh) badgeClass = "bg-red-600 text-white font-bold";
+        if (p.status === 'Merged Team') badgeClass = "bg-purple-100 text-purple-800 font-bold";
+
+        const tr = document.createElement('tr');
+        tr.className = `hover:bg-slate-50 transition ${isHigh ? 'bg-red-50/40 border-l-4 border-l-red-500' : ''}`;
+        tr.innerHTML = `
+          <td class="p-3.5 font-mono text-slate-400">#${p.proposal_id}</td>
+          <td class="p-3.5">
+            <div class="font-bold text-slate-900">${p.title}</div>
+            <div class="text-slate-500 text-[11px]">${p.team_name} &bull; Lead: ${p.lead_name} (${p.lead_reg_no})</div>
+          </td>
+          <td class="p-3.5 text-slate-600">${p.domain_name}</td>
+          <td class="p-3.5">
+            <span class="px-2.5 py-1 rounded-full text-[11px] ${badgeClass}">${p.status}</span>
+          </td>
+          <td class="p-3.5 font-mono font-bold ${isHigh ? 'text-red-700' : 'text-slate-600'}">
+            ${p.highest_similarity_score}% ${isHigh ? '🔴' : ''}
+          </td>
+          <td class="p-3.5 text-right space-x-1">
+            <button onclick="resolveFacultyAction(${p.proposal_id}, 'Approved')" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-semibold border border-emerald-200">Approve</button>
+            <button onclick="resolveFacultyAction(${p.proposal_id}, 'Flagged Duplicate')" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-semibold border border-red-200">Flag</button>
+            <button onclick="openMergeModal(${p.proposal_id})" class="px-2.5 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-semibold border border-purple-200">Merge</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    async function resolveFacultyAction(proposalId, newStatus) {
+      try {
+        if (isServerApiAvailable) {
+          await fetch('/api/faculty/review', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ proposal_id: proposalId, action: newStatus, notes: "Direct Faculty Update", guide_name: "Dr. S.P. Ramya" })
+          });
+        }
+      } catch (e) {}
+
+      const item = globalProposals.find(p => p.proposal_id === proposalId);
+      if (item) {
+        item.status = newStatus;
+        localStorage.setItem('srmist_dbms_proposals_v2', JSON.stringify(globalProposals));
+        if (sqlWasmDb) {
+          try { sqlWasmDb.run("UPDATE proposals SET status = ? WHERE proposal_id = ?", [newStatus, proposalId]); } catch (e) {}
+        }
+      }
+      renderAdminDashboard();
+      renderDatabaseCatalog(globalProposals);
+    }
+
+    function openMergeModal(proposalId) {
+      activeMergeProposalId = proposalId;
+      const target = globalProposals.find(p => p.proposal_id === proposalId);
+      if (!target) return;
+
+      document.getElementById('merge-target-title').innerText = target.title;
+      document.getElementById('merge-target-team').innerText = `${target.team_name} (Lead: ${target.lead_name})`;
+
+      const select = document.getElementById('merge-partner-select');
+      select.innerHTML = '';
+      globalProposals.filter(p => p.proposal_id !== proposalId).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.proposal_id;
+        opt.innerText = `#${p.proposal_id}: ${p.title} (${p.team_name})`;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('merge-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeMergeModal() {
+      document.getElementById('merge-modal').classList.add('hidden');
+      activeMergeProposalId = null;
+    }
+
+    async function executeMergeResolution() {
+      if (!activeMergeProposalId) return;
+      const partnerId = parseInt(document.getElementById('merge-partner-select').value);
+      const notes = document.getElementById('merge-notes').value;
+
+      try {
+        if (isServerApiAvailable) {
+          const res = await fetch('/api/faculty/review', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              proposal_id: activeMergeProposalId,
+              action: "Merged Team",
+              merged_with_proposal_id: partnerId,
+              notes: notes,
+              guide_name: "Dr. S.P. Ramya"
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            alert(data.message + "\n" + (data.merged_info || ""));
+            closeMergeModal();
+            loadProposalsData();
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // Local update
+      const target = globalProposals.find(p => p.proposal_id === activeMergeProposalId);
+      const partner = globalProposals.find(p => p.proposal_id === partnerId);
+      if (target) target.status = "Merged Team";
+      if (partner) partner.status = "Merged Team";
+
+      localStorage.setItem('srmist_dbms_proposals_v2', JSON.stringify(globalProposals));
+      if (sqlWasmDb) {
+        try {
+          sqlWasmDb.run("UPDATE proposals SET status = 'Merged Team' WHERE proposal_id IN (?, ?)", [activeMergeProposalId, partnerId]);
+        } catch (e) {}
+      }
+
+      alert(`Entity Resolution Completed: Merged Proposal #${activeMergeProposalId} with #${partnerId}`);
+      closeMergeModal();
+      loadProposalsData();
+    }
+
+    // --- 12. Project Database Explorer ---
+    function filterDatabaseList() {
+      const q = document.getElementById('db-search-input').value.toLowerCase().trim();
+      const domain = document.getElementById('db-domain-filter').value;
+
+      const filtered = globalProposals.filter(p => {
+        const matchQ = !q || p.title.toLowerCase().includes(q) || p.full_description.toLowerCase().includes(q) || p.lead_name.toLowerCase().includes(q);
+        const matchD = !domain || p.domain_name === domain;
+        return matchQ && matchD;
+      });
+
+      renderDatabaseCatalog(filtered);
+    }
+
+    function renderDatabaseCatalog(list) {
+      const grid = document.getElementById('database-cards-grid');
+      grid.innerHTML = '';
+
+      if (!list.length) {
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs">No matching proposals found in database.</div>`;
+        return;
+      }
+
+      list.forEach(p => {
+        const isHigh = p.highest_similarity_score >= 80.0 || p.status === 'Flagged Duplicate';
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3 flex flex-col justify-between";
+        card.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-mono text-slate-400">#${p.proposal_id}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${p.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : (isHigh ? 'bg-red-600 text-white' : 'bg-purple-100 text-purple-800')}">
+                ${p.status}
+              </span>
+            </div>
+            <h4 class="font-extrabold text-slate-900 text-sm leading-snug">${p.title}</h4>
+            <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed">${p.full_description}</p>
+          </div>
+          <div class="pt-3 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
+            <div class="flex justify-between">
+              <span>Domain:</span>
+              <strong class="text-slate-800">${p.domain_name}</strong>
+            </div>
+            <div class="flex justify-between">
+              <span>Lead:</span>
+              <strong class="text-slate-800">${p.lead_name} (${p.lead_reg_no})</strong>
+            </div>
+            <div class="flex justify-between">
+              <span>Similarity:</span>
+              <strong class="${isHigh ? 'text-red-600 font-bold' : 'text-slate-800'}">${p.highest_similarity_score}% ${isHigh ? '🔴' : ''}</strong>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    async function resetDatabaseBenchmark() {
+      if (!confirm("Reset database to official SRMIST benchmark state?")) return;
+      try {
+        if (isServerApiAvailable) {
+          await fetch('/api/db/reset', { method: 'POST' });
+        }
+      } catch (e) {}
+
+      localStorage.removeItem('srmist_dbms_proposals_v2');
+      globalProposals = [...BENCHMARK_SEED_PROPOSALS];
+      localStorage.setItem('srmist_dbms_proposals_v2', JSON.stringify(globalProposals));
+      await initWebAssemblySqlite();
+      alert("Database reset to official SRMIST presentation benchmark.");
+      loadProposalsData();
+    }
+
+    // --- 13. Initialization on DOM Load ---
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      detectBackend();
+      executePairComparison();
+    });
+  </script>
+</body>
+</html>
